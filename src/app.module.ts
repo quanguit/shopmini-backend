@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import databaseConfig from './database/config/database.config';
+import { DataBaseModule } from './database/database.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CategoryModule } from './modules/category/category.module';
 import { NotificationModule } from './modules/notification/notification.module';
@@ -12,6 +15,11 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [databaseConfig],
+    }),
+    DataBaseModule,
     CartModule,
     CategoryModule,
     NotificationModule,
