@@ -26,8 +26,11 @@ export class Payment extends BaseEntity {
   })
   status: PaymentStatus;
 
-  @Column({ name: PAYMENT_COLUMNS.transactionRef, nullable: true })
-  transactionRef?: string | null;
+  @Column({
+    name: PAYMENT_COLUMNS.transactionRef,
+    nullable: true,
+  })
+  transactionRef?: string;
 
   @Column({ name: PAYMENT_COLUMNS.paidAt, type: 'timestamp', nullable: true })
   paidAt?: Date | null;

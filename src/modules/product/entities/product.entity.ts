@@ -34,7 +34,12 @@ export class Product extends BaseEntity {
   @Column({ name: PRODUCT_COLUMNS.stock })
   stock: number;
 
-  @Column({ name: PRODUCT_COLUMNS.images, array: true, default: [] })
+  @Column({
+    name: PRODUCT_COLUMNS.images,
+    type: 'text',
+    array: true,
+    default: '{}',
+  })
   images: string[];
 
   @Column({

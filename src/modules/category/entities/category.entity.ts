@@ -12,8 +12,11 @@ export class Category extends BaseEntity {
   @Column({ name: CATEGORY_COLUMNS.slug, unique: true })
   slug: string;
 
-  @Column({ name: CATEGORY_COLUMNS.parentId, nullable: true })
-  parentId?: number | null;
+  @Column({
+    name: CATEGORY_COLUMNS.parentId,
+    nullable: true,
+  })
+  parentId?: number;
 
   // Self-reference: many child categories belong to one parent category
   @ManyToOne(() => Category, (category) => category.children, {
