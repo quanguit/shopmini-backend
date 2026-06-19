@@ -77,16 +77,16 @@ Một nền tảng marketplace mini, nơi seller đăng bán sản phẩm, custo
 
 | Entity         | Trường chính                                                                                  | Quan hệ                                                  |
 | -------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `User`         | `id`, `email`, `passwordHash`, `fullName`, `role`, `createdAt`                                | 1—N: Product (seller), Order, Cart, Review, Notification |
-| `Category`     | `id`, `name`, `slug`, `parentId` (self-ref, nullable)                                         | 1—N: Product                                             |
-| `Product`      | `id`, `sellerId`, `categoryId`, `name`, `description`, `price`, `stock`, `images[]`, `status` | N—1: User, Category<br>1—N: CartItem, OrderItem, Review  |
-| `Cart`         | `id`, `userId`, `createdAt`                                                                   | 1—N: CartItem                                            |
+| `User`         | `id`, `email`, `password`, `fullName`, `role`                                                 | 1—N: Product (seller), Order, Cart, Review, Notification |
+| `Category`     | `id`, `name`, `slug`, `parent`(self-ref, nullable)                                            | 1—N: Product                                             |
+| `Product`      | `id`, `sellerId`, `categoryId`, `name`, `description`, `price`, `stock`, `images[]`, `status` | N—1: User, Category, (1-N): CartItem, OrderItem, Review  |
+| `Cart`         | `id`, `userId`                                                                                | 1—N: CartItem, User(N-1)                                 |
 | `CartItem`     | `id`, `cartId`, `productId`, `quantity`                                                       | N—1: Cart, Product                                       |
-| `Order`        | `id`, `userId`, `status`, `totalAmount`, `createdAt`                                          | 1—N: OrderItem<br>1—1: Payment                           |
+| `Order`        | `id`, `userId`, `status`, `totalAmount`,                                                      | 1—N: OrderItem, Payment(1—1), User(N-1)                  |
 | `OrderItem`    | `id`, `orderId`, `productId`, `quantity`, `priceAtOrder`                                      | N—1: Order, Product                                      |
 | `Payment`      | `id`, `orderId`, `method`, `status`, `transactionRef`, `paidAt`                               | 1—1: Order                                               |
-| `Review`       | `id`, `productId`, `userId`, `rating` (1–5), `comment`, `createdAt`                           | N—1: Product, User                                       |
-| `Notification` | `id`, `userId`, `type`, `payload` (json), `readAt`, `createdAt`                               | N—1: User                                                |
+| `Review`       | `id`, `productId`, `userId`, `rating` (1–5), `comment`,                                       | N—1: Product, User                                       |
+| `Notification` | `id`, `userId`, `type`, `payload` (json), `readAt`                                            | N—1: User                                                |
 
 > **Ghi chú:**
 >
