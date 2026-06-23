@@ -3,7 +3,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class CreateProductTable1760000000003 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "product_status_enum" AS ENUM ('draft', 'published')
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'product_status_enum') THEN
+          CREATE TYPE "product_status_enum" AS ENUM ('draft', 'published');
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
@@ -27,7 +32,7 @@ export class CreateProductTable1760000000003 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "product"`);
-    await queryRunner.query(`DROP TYPE "product_status_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "product"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "product_status_enum"`);
   }
 }

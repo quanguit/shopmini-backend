@@ -8,17 +8,19 @@ import { Review } from 'src/modules/review/entities/review.entity';
 import { Column, Entity, OneToMany } from 'typeorm';
 import { USER_COLUMNS } from '../constants/user.constants';
 import { UserRole } from '../enums/user-role.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity({ name: TABLE_NAMES.USER })
 export class User extends BaseEntity {
   @Column({ name: USER_COLUMNS.email, unique: true })
   email: string;
 
-  @Column({ name: USER_COLUMNS.password, select: false })
+  @Column({ name: USER_COLUMNS.password })
+  @Exclude()
   password: string;
 
-  @Column({ name: USER_COLUMNS.fullname })
-  fullname: string;
+  @Column({ name: USER_COLUMNS.fullName })
+  fullName: string;
 
   @Column({
     name: USER_COLUMNS.role,

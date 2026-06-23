@@ -3,11 +3,21 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class CreatePaymentTable1760000000009 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "payment_method_enum" AS ENUM ('credit_card', 'bank_transfer', 'cash_on_delivery')
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_method_enum') THEN
+          CREATE TYPE "payment_method_enum" AS ENUM ('credit_card', 'bank_transfer', 'cash_on_delivery');
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
-      CREATE TYPE "payment_status_enum" AS ENUM ('pending', 'success', 'failed')
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status_enum') THEN
+          CREATE TYPE "payment_status_enum" AS ENUM ('pending', 'success', 'failed');
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
@@ -28,8 +38,8 @@ export class CreatePaymentTable1760000000009 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "payment"`);
-    await queryRunner.query(`DROP TYPE "payment_status_enum"`);
-    await queryRunner.query(`DROP TYPE "payment_method_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "payment"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "payment_status_enum"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "payment_method_enum"`);
   }
 }

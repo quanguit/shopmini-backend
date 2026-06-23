@@ -3,7 +3,12 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class CreateUserTable1760000000001 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TYPE "user_role_enum" AS ENUM ('admin', 'seller', 'customer')
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role_enum') THEN
+          CREATE TYPE "user_role_enum" AS ENUM ('admin', 'seller', 'customer');
+        END IF;
+      END $$;
     `);
 
     await queryRunner.query(`
@@ -11,7 +16,7 @@ export class CreateUserTable1760000000001 implements MigrationInterface {
         "id" SERIAL NOT NULL,
         "email" character varying NOT NULL,
         "password" character varying NOT NULL,
-        "fullname" character varying NOT NULL,
+        "full_name" character varying NOT NULL,
         "role" "user_role_enum" NOT NULL DEFAULT 'customer',
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
@@ -22,7 +27,7 @@ export class CreateUserTable1760000000001 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "user"`);
-    await queryRunner.query(`DROP TYPE "user_role_enum"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "user"`);
+    await queryRunner.query(`DROP TYPE IF EXISTS "user_role_enum"`);
   }
 }

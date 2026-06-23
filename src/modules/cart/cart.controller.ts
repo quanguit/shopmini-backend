@@ -3,5 +3,5 @@ import { CartService } from './cart.service';
 
 @Controller('carts')
 export class CartController {
-  constructor(private cartService: CartService) {}
+  constructor(private readonly cartService: CartService) {}
 }
