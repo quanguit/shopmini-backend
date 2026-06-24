@@ -1,13 +1,13 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { APP_DATA_SOURCE } from './database/constants/data-source';
+import { InjectDataSource } from './common/decorators/inject.decorator';
 
 @Injectable()
 export class AppService {
   private readonly logger = new Logger(AppService.name);
 
   constructor(
-    @Inject(APP_DATA_SOURCE)
+    @InjectDataSource()
     private readonly dataSource: DataSource,
   ) {}
 

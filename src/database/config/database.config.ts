@@ -22,15 +22,15 @@ class EnvironmentVariablesValidator {
   DB_PASSWORD: string;
 }
 
-export default registerAs<DatabaseConfig>('database', () => {
+export const databaseConfig = registerAs<DatabaseConfig>('database', () => {
   validateConfig(EnvironmentVariablesValidator, process.env);
 
   return {
-    type: process.env.DB_CONNECTION!,
-    host: process.env.DB_HOST!,
-    port: parseInt(process.env.DB_PORT!, 10),
-    username: process.env.DB_USER!,
-    password: process.env.DB_PASSWORD!,
-    name: process.env.DB_NAME!,
+    type: process.env.DB_CONNECTION,
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT, 10),
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    name: process.env.DB_NAME,
   };
 });

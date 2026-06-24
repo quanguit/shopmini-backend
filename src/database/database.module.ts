@@ -1,14 +1,14 @@
 import { Global, Module } from '@nestjs/common';
-import { APP_DATA_SOURCE } from './constants/data-source';
+import { APP_DATA_SOURCE_TOKEN } from './constants/data-source';
 import { AppDataSource } from './data-source';
 
 @Global()
 @Module({
-  //  if have one DB, should be use below
-  //  imports: [TypeOrmModule.forRoot(dataSourceOptions)],
+  // //  if have one DB, should be use below
+  // imports: [TypeOrmModule.forRoot(dataSourceOptions)],
   providers: [
     {
-      provide: APP_DATA_SOURCE,
+      provide: APP_DATA_SOURCE_TOKEN,
       useFactory: async () => {
         if (!AppDataSource.isInitialized) {
           await AppDataSource.initialize();
@@ -17,6 +17,6 @@ import { AppDataSource } from './data-source';
       },
     },
   ],
-  exports: [APP_DATA_SOURCE],
+  exports: [APP_DATA_SOURCE_TOKEN],
 })
 export class DataBaseModule {}
