@@ -1,6 +1,12 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { AllConfig } from 'src/common/configs/all-config.type';
 import { User } from '../user/entities/user.entity';
 import { UserRole } from '../user/enums/user-role.enum';
 import { UserService } from '../user/user.service';
@@ -12,7 +18,31 @@ export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService<AllConfig>,
   ) {}
+
+  private async signTokens(
+    payload: JwtPayload,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow('jwt.secret', { infer: true }),
+        expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
+          infer: true,
+        }),
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow('jwt.refreshSecret', {
+          infer: true,
+        }),
+        expiresIn: this.configService.getOrThrow('jwt.refreshExpiresIn', {
+          infer: true,
+        }),
+      }),
+    ]);
+
+    return { access_token, refresh_token };
+  }
 
   async register(registerDto: RegisterDto): Promise<User> {
     const { password, ...userData } = registerDto;
@@ -48,13 +78,49 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User): Promise<{ access_token: string }> {
+  async login(
+    user: Omit<User, 'password'>,
+  ): Promise<{ access_token: string; refresh_token: string }> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       role: user.role,
     };
-    const access_token = await this.jwtService.signAsync(payload);
+
+    return this.signTokens(payload);
+  }
+
+  async refreshAccessToken(
+    refreshToken: string,
+  ): Promise<{ access_token: string }> {
+    let payload: JwtPayload;
+
+    try {
+      payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
+        secret: this.configService.getOrThrow('jwt.refreshSecret', {
+          infer: true,
+        }),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    const user = await this.userService.findUserById(payload.sub);
+    if (!user) throw new UnauthorizedException();
+
+    const newPayload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    const access_token = await this.jwtService.signAsync(newPayload, {
+      secret: this.configService.getOrThrow('jwt.secret', { infer: true }),
+      expiresIn: this.configService.getOrThrow('jwt.expiresIn', {
+        infer: true,
+      }),
+    });
+
     return { access_token };
   }
 }
