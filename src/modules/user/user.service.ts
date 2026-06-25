@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
 import { QueryFailedError, Repository } from 'typeorm';
@@ -25,6 +26,17 @@ export class UserService {
 
   async findUserById(id: number): Promise<User | null> {
     return this.userRepository.findOneBy({ id });
+  }
+
+  async updatePassword(userId: number, hashedPassword: string): Promise<void> {
+    const result = await this.userRepository.update(
+      { id: userId },
+      { password: hashedPassword },
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('User not found');
+    }
   }
 
   async createUser(data: CreateUserDto): Promise<User> {

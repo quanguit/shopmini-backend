@@ -7,6 +7,7 @@ export const TABLE_NAMES = {
   ORDER_DETAIL: 'order_detail',
   PAYMENT: 'payment',
   PRODUCT: 'product',
+  REFRESH_TOKEN: 'refresh_token',
   REVIEW: 'review',
   USER: 'user',
 };
