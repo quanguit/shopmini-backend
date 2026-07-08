@@ -62,9 +62,9 @@ export class CategoryService {
   }
 
   async getAllCategories(
-    pagination: PaginationDto,
+    paginationDto: PaginationDto,
   ): Promise<PaginatedResult<Category>> {
-    const { page, limit } = pagination;
+    const { page, limit } = paginationDto;
     const offset = (page - 1) * limit;
 
     const [data, total] = await this.categoryRepository.findAndCount({

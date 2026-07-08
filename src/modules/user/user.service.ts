@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
 import { QueryFailedError, Repository } from 'typeorm';
@@ -20,11 +21,25 @@ export class UserService {
   }
 
   async findUserByEmail(email: string): Promise<User | null> {
-    return this.userRepository.findOneBy({ email: this.normalizeEmail(email) });
+    const user = await this.userRepository.findOneBy({
+      email: this.normalizeEmail(email),
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   async findUserById(id: number): Promise<User | null> {
-    return this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOneBy({ id });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
   async createUser(data: CreateUserDto): Promise<User> {

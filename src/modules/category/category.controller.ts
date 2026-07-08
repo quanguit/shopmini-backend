@@ -15,7 +15,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/types/pagination.type';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/role.decorator';
-import { RolesGuard } from '../auth/guards/role.guard';
+import { RoleGuard } from '../auth/guards/role.guard';
 import { UserRole } from '../user/enums/user-role.enum';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dtos/create-category.dto';
@@ -29,9 +29,9 @@ export class CategoryController {
   @Public()
   @Get()
   findAllCategories(
-    @Query() pagination: PaginationDto,
+    @Query() paginationDto: PaginationDto,
   ): Promise<PaginatedResult<Category>> {
-    return this.categoryService.getAllCategories(pagination);
+    return this.categoryService.getAllCategories(paginationDto);
   }
 
   @Get(':id')
@@ -40,14 +40,14 @@ export class CategoryController {
   }
 
   @Post()
-  @UseGuards(RolesGuard)
+  @UseGuards(RoleGuard)
   @Roles(UserRole.ADMIN)
   createCategory(@Body() dto: CreateCategoryDto): Promise<Category> {
     return this.categoryService.createCategory(dto);
   }
 
   @Patch(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(RoleGuard)
   @Roles(UserRole.ADMIN)
   updateCategory(
     @Param('id', ParseIntPipe) id: number,
@@ -57,7 +57,7 @@ export class CategoryController {
   }
 
   @Delete(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(RoleGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(204)
   removeCategory(@Param('id', ParseIntPipe) id: number) {
