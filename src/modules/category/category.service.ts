@@ -1,20 +1,21 @@
 import {
   BadRequestException,
-  ConflictException,
   Injectable,
-  InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/types/pagination.type';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { Category } from './entities/category.entity';
 
 @Injectable()
 export class CategoryService {
+  private readonly logger = new Logger(CategoryService.name);
+
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
@@ -61,7 +62,7 @@ export class CategoryService {
     }
   }
 
-  async getAllCategories(
+  async findAllCategories(
     paginationDto: PaginationDto,
   ): Promise<PaginatedResult<Category>> {
     const { page, limit } = paginationDto;
@@ -88,7 +89,7 @@ export class CategoryService {
     };
   }
 
-  async getCategoryById(id: number) {
+  async getCategoryById(id: number): Promise<Category> {
     const category = await this.categoryRepository.findOneBy({ id });
 
     if (!category) {
@@ -106,13 +107,8 @@ export class CategoryService {
     try {
       return await this.categoryRepository.save(category);
     } catch (error) {
-      if (
-        error instanceof QueryFailedError &&
-        (error.driverError as { code?: string })?.code === '23505'
-      ) {
-        throw new ConflictException('Slug already in use');
-      }
-      throw new InternalServerErrorException('Cannot create category');
+      this.logger.error('Error creating category', error);
+      throw error;
     }
   }
 
@@ -126,18 +122,19 @@ export class CategoryService {
     try {
       return await this.categoryRepository.save(category);
     } catch (error) {
-      if (
-        error instanceof QueryFailedError &&
-        (error.driverError as { code?: string })?.code === '23505'
-      ) {
-        throw new ConflictException('Slug already in use');
-      }
-      throw new InternalServerErrorException('Cannot update category');
+      this.logger.error('Error updating category', error);
+      throw error;
     }
   }
 
-  async removeCategory(id: number) {
+  async removeCategory(id: number): Promise<void> {
     const category = await this.getCategoryById(id);
-    await this.categoryRepository.remove(category);
+
+    try {
+      await this.categoryRepository.remove(category);
+    } catch (error) {
+      this.logger.error('Error removing category', error);
+      throw error;
+    }
   }
 }

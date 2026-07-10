@@ -31,11 +31,11 @@ export class CategoryController {
   findAllCategories(
     @Query() paginationDto: PaginationDto,
   ): Promise<PaginatedResult<Category>> {
-    return this.categoryService.getAllCategories(paginationDto);
+    return this.categoryService.findAllCategories(paginationDto);
   }
 
   @Get(':id')
-  findCategoryById(@Param('id', ParseIntPipe) id: number) {
+  findCategoryById(@Param('id', ParseIntPipe) id: number): Promise<Category> {
     return this.categoryService.getCategoryById(id);
   }
 
@@ -60,7 +60,7 @@ export class CategoryController {
   @UseGuards(RoleGuard)
   @Roles(UserRole.ADMIN)
   @HttpCode(204)
-  removeCategory(@Param('id', ParseIntPipe) id: number) {
+  removeCategory(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.categoryService.removeCategory(id);
   }
 }
