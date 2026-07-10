@@ -9,7 +9,7 @@ import { databaseConfig } from './database/config/database.config';
 import { DataBaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
-import { CartDetailModule } from './modules/cart-detail/cart-detail.module';
+import { CartItemModule } from './modules/cart-item/cart-item.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CategoryModule } from './modules/category/category.module';
 import { NotificationModule } from './modules/notification/notification.module';
@@ -36,7 +36,7 @@ import { UserModule } from './modules/user/user.module';
     }),
     DataBaseModule,
     CartModule,
-    CartDetailModule,
+    CartItemModule,
     CategoryModule,
     NotificationModule,
     OrderModule,

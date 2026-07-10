@@ -1,4 +1,4 @@
-export const CART_DETAIL_COLUMNS = {
+export const CART_ITEM_COLUMNS = {
   id: 'id',
   cartId: 'cart_id',
   productId: 'product_id',

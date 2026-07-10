@@ -1,6 +1,6 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { TABLE_NAMES } from 'src/database/constants/table-names';
-import { CartDetail } from 'src/modules/cart-detail/entities/cart-detail.entity';
+import { CartItem } from 'src/modules/cart-item/entities/cart-item.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
 import { OrderDetail } from 'src/modules/order-detail/entities/order-detail.entity';
 import { Review } from 'src/modules/review/entities/review.entity';
@@ -62,9 +62,9 @@ export class Product extends BaseEntity {
   @JoinColumn({ name: PRODUCT_COLUMNS.categoryId })
   category?: Category | null;
 
-  // 1—N: CartDetail
-  @OneToMany(() => CartDetail, (cartDetail) => cartDetail.product)
-  cartDetails: CartDetail[];
+  // 1—N: CartItem
+  @OneToMany(() => CartItem, (cartItem) => cartItem.product)
+  cartItems: CartItem[];
 
   // 1—N: OrderDetail
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.product)

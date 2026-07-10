@@ -1,6 +1,6 @@
 export const TABLE_NAMES = {
   CART: 'cart',
-  CART_DETAIL: 'cart_detail',
+  CART_ITEM: 'cart_item',
   CATEGORY: 'category',
   NOTIFICATION: 'notification',
   ORDER: 'order',
