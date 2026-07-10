@@ -4,7 +4,7 @@ export const TABLE_NAMES = {
   CATEGORY: 'category',
   NOTIFICATION: 'notification',
   ORDER: 'order',
-  ORDER_DETAIL: 'order_detail',
+  ORDER_ITEM: 'order_item',
   PAYMENT: 'payment',
   PRODUCT: 'product',
   REVIEW: 'review',

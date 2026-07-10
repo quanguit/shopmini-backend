@@ -1,6 +1,6 @@
 import { BaseEntity } from 'src/common/entities/base.entity';
 import { TABLE_NAMES } from 'src/database/constants/table-names';
-import { OrderDetail } from 'src/modules/order-detail/entities/order-detail.entity';
+import { OrderItem } from 'src/modules/order-item/entities/order-item.entity';
 import { Payment } from 'src/modules/payment/entities/payment.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {
@@ -40,9 +40,9 @@ export class Order extends BaseEntity {
   @JoinColumn({ name: ORDER_COLUMNS.userId })
   user: User;
 
-  // 1—N: OrderDetail
-  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
-  orderDetails: OrderDetail[];
+  // 1—N: OrderItem
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.order)
+  orderItems: OrderItem[];
 
   // 1—1: Payment (Payment is the owning side of the foreign key)
   @OneToOne(() => Payment, (payment) => payment.order)

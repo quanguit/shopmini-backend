@@ -13,7 +13,7 @@ import { CartItemModule } from './modules/cart-item/cart-item.module';
 import { CartModule } from './modules/cart/cart.module';
 import { CategoryModule } from './modules/category/category.module';
 import { NotificationModule } from './modules/notification/notification.module';
-import { OrderDetailModule } from './modules/order-detail/order-detail.module';
+import { OrderItemModule } from './modules/order-item/order-item.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ProductModule } from './modules/product/product.module';
@@ -40,7 +40,7 @@ import { UserModule } from './modules/user/user.module';
     CategoryModule,
     NotificationModule,
     OrderModule,
-    OrderDetailModule,
+    OrderItemModule,
     PaymentModule,
     ProductModule,
     ReviewModule,

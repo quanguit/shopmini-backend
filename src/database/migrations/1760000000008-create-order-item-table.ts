@@ -1,9 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateOrderDetailTable1760000000008 implements MigrationInterface {
+export class CreateOrderItemTable1760000000008 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
-      CREATE TABLE "order_detail" (
+      CREATE TABLE "order_item" (
         "id" SERIAL NOT NULL,
         "order_id" integer NOT NULL,
         "product_id" integer NOT NULL,
@@ -11,14 +11,14 @@ export class CreateOrderDetailTable1760000000008 implements MigrationInterface {
         "price_at_order" numeric(10,2) NOT NULL,
         "created_at" TIMESTAMP NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-        CONSTRAINT "PK_order_detail_id" PRIMARY KEY ("id"),
-        CONSTRAINT "FK_order_detail_order" FOREIGN KEY ("order_id") REFERENCES "order"("id") ON DELETE CASCADE ON UPDATE NO ACTION,
-        CONSTRAINT "FK_order_detail_product" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE SET NULL ON UPDATE NO ACTION
+        CONSTRAINT "PK_order_item_id" PRIMARY KEY ("id"),
+        CONSTRAINT "FK_order_item_order" FOREIGN KEY ("order_id") REFERENCES "order"("id") ON DELETE CASCADE ON UPDATE NO ACTION,
+        CONSTRAINT "FK_order_item_product" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE SET NULL ON UPDATE NO ACTION
       )
     `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(`DROP TABLE "order_detail"`);
+    await queryRunner.query(`DROP TABLE "order_item"`);
   }
 }

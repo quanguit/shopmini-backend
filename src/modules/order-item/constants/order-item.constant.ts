@@ -1,4 +1,4 @@
-export const ORDER_DETAIL_COLUMNS = {
+export const ORDER_ITEM_COLUMNS = {
   id: 'id',
   orderId: 'order_id',
   productId: 'product_id',

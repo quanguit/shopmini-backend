@@ -2,7 +2,7 @@ import { BaseEntity } from 'src/common/entities/base.entity';
 import { TABLE_NAMES } from 'src/database/constants/table-names';
 import { CartItem } from 'src/modules/cart-item/entities/cart-item.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
-import { OrderDetail } from 'src/modules/order-detail/entities/order-detail.entity';
+import { OrderItem } from 'src/modules/order-item/entities/order-item.entity';
 import { Review } from 'src/modules/review/entities/review.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
@@ -66,9 +66,9 @@ export class Product extends BaseEntity {
   @OneToMany(() => CartItem, (cartItem) => cartItem.product)
   cartItems: CartItem[];
 
-  // 1—N: OrderDetail
-  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.product)
-  orderDetails: OrderDetail[];
+  // 1—N: OrderItem
+  @OneToMany(() => OrderItem, (orderItem) => orderItem.product)
+  orderItems: OrderItem[];
 
   // 1—N: Review
   @OneToMany(() => Review, (review) => review.product)
