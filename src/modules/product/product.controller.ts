@@ -22,6 +22,7 @@ import { UserRole } from '../user/enums/user-role.enum';
 import { CreateProductDto } from './dtos/create-product.dto';
 import { UpdateProductDto } from './dtos/update-product.dto';
 import { Product } from './entities/product.entity';
+import { OwnershipGuard } from './guards/ownership.guard';
 import { ProductService } from './product.service';
 
 @Controller('products')
@@ -55,24 +56,20 @@ export class ProductController {
   }
 
   @Patch(':id')
-  @UseGuards(RoleGuard)
+  @UseGuards(RoleGuard, OwnershipGuard)
   @Roles(UserRole.SELLER)
   async updateProduct(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateProductDto,
-    @CurrentUser() user: JwtPayload,
   ): Promise<Product> {
-    return this.productService.updateProduct(id, user.sub, dto);
+    return this.productService.updateProduct(id, dto);
   }
 
   @Delete(':id')
-  @UseGuards(RoleGuard)
+  @UseGuards(RoleGuard, OwnershipGuard)
   @Roles(UserRole.SELLER)
   @HttpCode(204)
-  async removeProduct(
-    @Param('id', ParseIntPipe) id: number,
-    @CurrentUser() user: JwtPayload,
-  ): Promise<void> {
-    return this.productService.removeProduct(id, user.sub);
+  async removeProduct(@Param('id', ParseIntPipe) id: number): Promise<void> {
+    return this.productService.removeProduct(id);
   }
 }

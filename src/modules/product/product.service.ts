@@ -1,9 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/types/pagination.type';
@@ -73,16 +68,8 @@ export class ProductService {
     return this.productRepository.save(newProduct);
   }
 
-  async updateProduct(
-    id: number,
-    userId: number,
-    data: UpdateProductDto,
-  ): Promise<Product> {
+  async updateProduct(id: number, data: UpdateProductDto): Promise<Product> {
     const product = await this.findProductById(id);
-
-    if (product.sellerId !== userId) {
-      throw new ForbiddenException('You do not own this product');
-    }
 
     if (data.categoryId) {
       await this.categoryService.getCategoryById(data.categoryId);
@@ -98,12 +85,8 @@ export class ProductService {
     }
   }
 
-  async removeProduct(id: number, userId: number): Promise<void> {
+  async removeProduct(id: number): Promise<void> {
     const product = await this.findProductById(id);
-
-    if (product.sellerId !== userId) {
-      throw new ForbiddenException('You do not own this product');
-    }
 
     try {
       await this.productRepository.remove(product);

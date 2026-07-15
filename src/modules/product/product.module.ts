@@ -5,6 +5,7 @@ import { Product } from './entities/product.entity';
 import { ProductController } from './product.controller';
 import { ProductService } from './product.service';
 import { CategoryModule } from '../category/category.module';
+import { OwnershipGuard } from './guards/ownership.guard';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { CategoryModule } from '../category/category.module';
     CategoryModule,
   ],
   controllers: [ProductController],
-  providers: [ProductService],
+  providers: [ProductService, OwnershipGuard],
   exports: [ProductService],
 })
 export class ProductModule {}
