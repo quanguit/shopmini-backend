@@ -20,6 +20,21 @@ export class CartItemService {
     private readonly productService: ProductService,
   ) {}
 
+  async findCartItemById(id: number): Promise<CartItem | null> {
+    const item = await this.cartItemRepository.findOne({
+      where: { id },
+      relations: {
+        cart: true,
+      },
+    });
+
+    if (!item) {
+      throw new NotFoundException('Cart item not found');
+    }
+
+    return item;
+  }
+
   async createCartItem(
     userId: number,
     dto: CreateCartItemDto,
@@ -54,16 +69,7 @@ export class CartItemService {
     userId: number,
     dto: UpdateCartItemDto,
   ): Promise<CartItem> {
-    const item = await this.cartItemRepository.findOne({
-      where: { id },
-      relations: {
-        cart: true,
-      },
-    });
-
-    if (!item) {
-      throw new NotFoundException('Cart item not found');
-    }
+    const item = await this.findCartItemById(id);
 
     if (item.cart.userId !== userId) {
       throw new ForbiddenException('You do not own this cart item');
@@ -74,16 +80,7 @@ export class CartItemService {
   }
 
   async removeCartItem(id: number, userId: number): Promise<void> {
-    const item = await this.cartItemRepository.findOne({
-      where: { id },
-      relations: {
-        cart: true,
-      },
-    });
-
-    if (!item) {
-      throw new NotFoundException('Cart item not found');
-    }
+    const item = await this.findCartItemById(id);
 
     if (item.cart.userId !== userId) {
       throw new ForbiddenException('You do not own this cart item');

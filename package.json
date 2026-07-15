@@ -27,6 +27,7 @@
     "seed:admin": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' npx ts-node -r tsconfig-paths/register src/database/seeds/admin.seed.ts"
   },
   "dependencies": {
+    "@casl/ability": "^7.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",
