@@ -6,6 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { jwtConfig } from './common/configs/jwt.config';
+import { redisConfig } from './common/configs/redis.config';
 import { databaseConfig } from './database/config/database.config';
 import { DataBaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -25,7 +26,7 @@ import { UserModule } from './modules/user/user.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, jwtConfig],
+      load: [databaseConfig, jwtConfig, redisConfig],
     }),
     ThrottlerModule.forRoot({
       throttlers: [
