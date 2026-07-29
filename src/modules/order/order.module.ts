@@ -5,6 +5,8 @@ import { CaslAbilityFactory } from '../auth/casl/casl-ability.factory';
 import { CartModule } from '../cart/cart.module';
 import { ProductModule } from '../product/product.module';
 import { Order } from './entities/order.entity';
+import { CreateOrderHandler } from './handlers/create-order.handler';
+import { SendNotificationHandler } from './handlers/order-created.handler';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 
@@ -15,7 +17,12 @@ import { OrderService } from './order.service';
     ProductModule,
   ],
   controllers: [OrderController],
-  providers: [OrderService, CaslAbilityFactory],
+  providers: [
+    OrderService,
+    CaslAbilityFactory,
+    CreateOrderHandler,
+    SendNotificationHandler,
+  ],
   exports: [OrderService],
 })
 export class OrderModule {}
