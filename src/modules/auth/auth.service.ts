@@ -79,10 +79,10 @@ export class AuthService {
   }
 
   async login(
-    user: JwtPayload,
+    user: Omit<User, 'password'>,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const payload: JwtPayload = {
-      sub: user.sub,
+      sub: user.id,
       email: user.email,
       role: user.role,
     };

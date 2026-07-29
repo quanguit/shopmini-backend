@@ -1,12 +1,12 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { User } from '../user/entities/user.entity';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
-import type { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -24,7 +24,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() user: Omit<User, 'password'>,
   ): Promise<{ access_token: string; refresh_token: string }> {
     return this.authService.login(user);
   }

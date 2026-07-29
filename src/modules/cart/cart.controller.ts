@@ -1,4 +1,6 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { PaginatedResult } from 'src/common/types/pagination.type';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/role.decorator';
 import { RoleGuard } from '../auth/guards/role.guard';
@@ -9,11 +11,19 @@ import { Cart } from './entities/cart.entity';
 
 @Controller('cart')
 @UseGuards(RoleGuard)
-@Roles(UserRole.CUSTOMER)
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
   @Get()
+  @Roles(UserRole.ADMIN)
+  async findAllCarts(
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginatedResult<Cart>> {
+    return this.cartService.findAllCarts(paginationDto);
+  }
+
+  @Get('/my-cart')
+  @Roles(UserRole.CUSTOMER)
   async getOrCreateCart(@CurrentUser() user: JwtPayload): Promise<Cart> {
     return this.cartService.getOrCreateCart(user.sub);
   }
