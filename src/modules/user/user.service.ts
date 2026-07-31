@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
-import { QueryFailedError, Repository } from 'typeorm';
+import { In, QueryFailedError, Repository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { User } from './entities/user.entity';
 
@@ -20,7 +20,7 @@ export class UserService {
     return email.trim().toLowerCase();
   }
 
-  async findUserByEmail(email: string): Promise<User | null> {
+  async getUserByEmail(email: string): Promise<User | null> {
     const user = await this.userRepository.findOneBy({
       email: this.normalizeEmail(email),
     });
@@ -32,7 +32,7 @@ export class UserService {
     return user;
   }
 
-  async findUserById(id: number): Promise<User | null> {
+  async getUserById(id: number): Promise<User | null> {
     const user = await this.userRepository.findOneBy({ id });
 
     if (!user) {
@@ -40,6 +40,13 @@ export class UserService {
     }
 
     return user;
+  }
+
+  async getUsersByIds(ids: number[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    return this.userRepository.find({
+      where: { id: In(ids) },
+    });
   }
 
   async createUser(data: CreateUserDto): Promise<User> {

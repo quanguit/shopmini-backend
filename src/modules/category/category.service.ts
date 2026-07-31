@@ -7,7 +7,7 @@ import {
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/types/pagination.type';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dtos/create-category.dto';
 import { UpdateCategoryDto } from './dtos/update-category.dto';
 import { Category } from './entities/category.entity';
@@ -97,6 +97,13 @@ export class CategoryService {
     }
 
     return category;
+  }
+
+  async getCategoriesByIds(ids: number[]): Promise<Category[]> {
+    if (ids.length === 0) return [];
+    return this.categoryRepository.find({
+      where: { id: In(ids) },
+    });
   }
 
   async createCategory(data: CreateCategoryDto): Promise<Category> {

@@ -65,7 +65,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Omit<User, 'password'> | null> {
-    const user = await this.userService.findUserByEmail(email);
+    const user = await this.userService.getUserByEmail(email);
 
     if (user) {
       const isMatch = await bcrypt.compare(password, user.password);
@@ -105,7 +105,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    const user = await this.userService.findUserById(payload.sub);
+    const user = await this.userService.getUserById(payload.sub);
     if (!user) throw new UnauthorizedException();
 
     const newPayload: JwtPayload = {
