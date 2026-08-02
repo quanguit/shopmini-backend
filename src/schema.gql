@@ -1,0 +1,68 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type CategoryType {
+  id: Int!
+  name: String!
+  slug: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+}
+
+type ProductConnection {
+  edges: [ProductEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ProductEdge {
+  cursor: String!
+  node: ProductType!
+}
+
+enum ProductSortField {
+  CREATED_AT
+  NAME
+  PRICE
+}
+
+type ProductType {
+  category: CategoryType
+  categoryId: Int
+  createdAt: DateTime!
+  description: String!
+  id: Int!
+  images: [String!]!
+  name: String!
+  price: Float!
+  seller: SellerType
+  sellerId: Int!
+  status: String!
+  stock: Int!
+}
+
+type Query {
+  searchProducts(after: String, categoryId: Int, first: Int! = 10, keyword: String, maxPrice: Float, minPrice: Float, sortBy: ProductSortField! = CREATED_AT, sortDirection: SortDirection! = DESC): ProductConnection!
+}
+
+type SellerType {
+  email: String!
+  fullName: String!
+  id: Int!
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}

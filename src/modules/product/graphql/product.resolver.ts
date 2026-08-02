@@ -18,10 +18,7 @@ export class ProductResolver {
   ) {}
 
   @Public()
-  @Query(() => ProductConnection, {
-    name: 'searchProducts',
-    description: 'Search products with filter, sort and cursor pagination',
-  })
+  @Query(() => ProductConnection, { name: 'searchProducts' })
   async searchProducts(
     @Args() args: ProductSearchArgs,
   ): Promise<ProductConnection> {
@@ -32,7 +29,9 @@ export class ProductResolver {
   @ResolveField(() => SellerType, { nullable: true })
   async seller(@Parent() product: ProductType): Promise<SellerType | null> {
     const user = await this.dataLoader.sellerLoader.load(product.sellerId);
+
     if (!user) return null;
+
     return {
       id: user.id,
       fullName: user.fullName,
@@ -44,10 +43,13 @@ export class ProductResolver {
   @ResolveField(() => CategoryType, { nullable: true })
   async category(@Parent() product: ProductType): Promise<CategoryType | null> {
     if (!product.categoryId) return null;
+
     const category = await this.dataLoader.categoryLoader.load(
       product.categoryId,
     );
+
     if (!category) return null;
+
     return {
       id: category.id,
       name: category.name,

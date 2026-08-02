@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from 'src/common/decorators/inject.decorator';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { PaginatedResult } from 'src/common/types/pagination.type';
@@ -14,6 +19,8 @@ import {
   SortDirection,
 } from './graphql/product-search.args';
 import { ProductConnection, ProductType } from './graphql/product.types';
+
+const MAX_FIRST = 100;
 
 @Injectable()
 export class ProductService {
@@ -117,59 +124,85 @@ export class ProductService {
       after,
     } = args;
 
-    // Tạo base query (KHÔNG join relations - dùng DataLoader)
-    const qb = this.productRepository
-      .createQueryBuilder('product')
-      .where('product.status = :status', { status: ProductStatus.PUBLISHED });
-
-    // === APPLY FILTERS ===
-
-    // Filter theo category
-    if (categoryId) {
-      qb.andWhere('product.categoryId = :categoryId', { categoryId });
-    }
-
-    // Filter theo khoảng giá
-    if (minPrice !== undefined) {
-      qb.andWhere('product.price >= :minPrice', { minPrice });
-    }
-    if (maxPrice !== undefined) {
-      qb.andWhere('product.price <= :maxPrice', { maxPrice });
-    }
-
-    // Filter theo keyword (tìm trong name và description)
-    if (keyword) {
-      qb.andWhere(
-        '(product.name ILIKE :keyword OR product.description ILIKE :keyword)',
-        { keyword: `%${keyword}%` },
+    // Validate first
+    if (first <= 0 || first > MAX_FIRST) {
+      throw new BadRequestException(
+        `\`first\` phải nằm trong khoảng 1-${MAX_FIRST}`,
       );
     }
+
+    const sortColumn = this.getSortColumn(sortBy);
+
+    // Helper build base query (dùng lại cho cả main query lẫn hasPreviousPage check)
+    const buildBaseQuery = () => {
+      const qb = this.productRepository
+        .createQueryBuilder('product')
+        .where('product.status = :status', { status: ProductStatus.PUBLISHED });
+
+      // === APPLY FILTERS ===
+
+      // Filter theo category
+      if (categoryId) {
+        qb.andWhere('product.categoryId = :categoryId', { categoryId });
+      }
+
+      // Filter theo khoảng giá
+      if (minPrice !== undefined) {
+        qb.andWhere('product.price >= :minPrice', { minPrice });
+      }
+      if (maxPrice !== undefined) {
+        qb.andWhere('product.price <= :maxPrice', { maxPrice });
+      }
+
+      // Filter theo keyword (tìm trong name và description)
+      if (keyword) {
+        qb.andWhere(
+          '(product.name ILIKE :keyword OR product.description ILIKE :keyword)',
+          { keyword: `%${keyword}%` },
+        );
+      }
+      return qb;
+    };
+
+    const qb = buildBaseQuery();
 
     // === COUNT TOTAL (trước khi apply cursor) ===
     const totalCount = await qb.getCount();
 
     // === APPLY CURSOR FILTER ===
-    // Decode cursor và apply keyset pagination
-    if (after) {
-      const cursorData = this.decodeCursor(after);
-      if (cursorData) {
-        const { sortValue, id } = cursorData;
-        const sortColumn = this.getSortColumn(sortBy);
-        const op = sortDirection === SortDirection.DESC ? '<' : '>';
+    let cursorData: { sortValue: string | number | Date; id: number } | null =
+      null;
 
-        // Keyset pagination: (sortColumn, id) comparison
-        // Ensures consistent ordering even with duplicate sort values
-        qb.andWhere(
-          `(product.${sortColumn} ${op} :sortValue OR (product.${sortColumn} = :sortValue AND product.id ${op} :id))`,
-          { sortValue, id },
-        );
+    if (after) {
+      cursorData = this.decodeCursor(after);
+      // FIX: cursor không hợp lệ -> báo lỗi rõ ràng thay vì âm thầm bỏ qua
+      if (!cursorData) {
+        throw new BadRequestException('Cursor không hợp lệ');
       }
+
+      const { sortValue, id } = cursorData;
+      const op = sortDirection === SortDirection.DESC ? '<' : '>';
+
+      // FIX: xử lý NULL trong cột sort bằng cách coalesce về so sánh an toàn
+      // (giả định NULL luôn đứng cuối bất kể ASC/DESC - tuỳ nghiệp vụ có thể đổi)
+      qb.andWhere(
+        `(
+        product.${sortColumn} ${op} :sortValue
+        OR (product.${sortColumn} = :sortValue AND product.id ${op} :id)
+        OR (product.${sortColumn} IS NULL AND :sortValueIsNull = false AND :sortDir = 'DESC')
+      )`,
+        {
+          sortValue,
+          id,
+          sortValueIsNull: sortValue === null,
+          sortDir: sortDirection,
+        },
+      );
     }
 
     // === APPLY SORT ===
-    const sortColumn = this.getSortColumn(sortBy);
-    qb.orderBy(`product.${sortColumn}`, sortDirection);
-    // Secondary sort by id for stable ordering
+    // FIX: chỉ định rõ NULLS LAST để tránh NULL trồi lên đầu/cuối không nhất quán
+    qb.orderBy(`product.${sortColumn}`, sortDirection, 'NULLS LAST');
     qb.addOrderBy('product.id', sortDirection);
 
     // === LIMIT (lấy thêm 1 để check hasNextPage) ===
@@ -181,7 +214,25 @@ export class ProductService {
     // Check hasNextPage
     const hasNextPage = products.length > first;
     if (hasNextPage) {
-      products.pop(); // Remove extra item
+      products.pop();
+    }
+
+    // === FIX: check hasPreviousPage bằng query thật thay vì suy đoán !!after ===
+    let hasPreviousPage = false;
+    if (after && cursorData && products.length > 0) {
+      const { sortValue, id } = cursorData;
+      const reverseOp = sortDirection === SortDirection.DESC ? '>' : '<';
+
+      const prevCheckQb = buildBaseQuery();
+      prevCheckQb.andWhere(
+        `(
+        product.${sortColumn} ${reverseOp} :sortValue
+        OR (product.${sortColumn} = :sortValue AND product.id ${reverseOp} :id)
+      )`,
+        { sortValue, id },
+      );
+      const prevCount = await prevCheckQb.getCount();
+      hasPreviousPage = prevCount > 0;
     }
 
     // Build edges with cursors
@@ -194,7 +245,7 @@ export class ProductService {
       edges,
       pageInfo: {
         hasNextPage,
-        hasPreviousPage: !!after,
+        hasPreviousPage,
         startCursor: edges.length > 0 ? edges[0].cursor : undefined,
         endCursor:
           edges.length > 0 ? edges[edges.length - 1].cursor : undefined,
@@ -216,7 +267,7 @@ export class ProductService {
   // Helper: Decode Base64 cursor về object
   private decodeCursor(
     cursor: string,
-  ): { sortValue: string | number | Date; id: number } | null {
+  ): { sortValue: string | number | Date | null; id: number } | null {
     try {
       const decoded = Buffer.from(cursor, 'base64').toString('utf8');
       const parsed = JSON.parse(decoded) as {
@@ -224,16 +275,20 @@ export class ProductService {
         id?: unknown;
       };
 
-      // Validate parsed structure
-      if (
-        typeof parsed.id !== 'number' ||
-        (typeof parsed.sortValue !== 'string' &&
-          typeof parsed.sortValue !== 'number')
-      ) {
+      // FIX: cho phép sortValue là null (trường hợp field nullable như description)
+      const validSortValue =
+        parsed.sortValue === null ||
+        typeof parsed.sortValue === 'string' ||
+        typeof parsed.sortValue === 'number';
+
+      if (typeof parsed.id !== 'number' || !validSortValue) {
         return null;
       }
 
-      return { sortValue: parsed.sortValue, id: parsed.id };
+      return {
+        sortValue: parsed.sortValue as string | number | null,
+        id: parsed.id,
+      };
     } catch {
       return null;
     }
