@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AllConfig } from 'src/common/configs/all-config.type';
@@ -12,6 +13,7 @@ import { Order } from './entities/order.entity';
 import { CreateOrderHandler } from './handlers/create-order.handler';
 import { OrderCreatedHandler } from './handlers/order-created.handler';
 import { OrderController } from './order.controller';
+import { OrderGateway } from './order.gateway';
 import { OrderService } from './order.service';
 
 @Module({
@@ -19,6 +21,13 @@ import { OrderService } from './order.service';
     TypeOrmModule.forFeature([Order], APP_DATA_SOURCE_NAME),
     CartModule,
     ProductModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService<AllConfig>) => ({
+        secret: configService.getOrThrow('jwt.secret', { infer: true }),
+      }),
+    }),
     ClientsModule.registerAsync([
       {
         name: NOTIFICATION_SERVICE,
@@ -44,6 +53,7 @@ import { OrderService } from './order.service';
     CaslAbilityFactory,
     CreateOrderHandler,
     OrderCreatedHandler,
+    OrderGateway,
   ],
   exports: [OrderService],
 })

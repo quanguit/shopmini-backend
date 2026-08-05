@@ -12,7 +12,9 @@ import { Action, CaslAbilityFactory } from '../auth/casl/casl-ability.factory';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { UserRole } from '../user/enums/user-role.enum';
 import { CreateOrderCommand } from './commands/create-order.command';
+import { UpdateOrderStatusDto } from './dtos/update-order-status.dto';
 import { Order } from './entities/order.entity';
+import { OrderGateway } from './order.gateway';
 
 @Injectable()
 export class OrderService {
@@ -21,6 +23,7 @@ export class OrderService {
     private readonly orderRepository: Repository<Order>,
     private readonly caslAbilityFactory: CaslAbilityFactory,
     private commandBus: CommandBus,
+    private readonly orderGateway: OrderGateway,
   ) {}
 
   async findAllOrders(
@@ -85,5 +88,32 @@ export class OrderService {
 
   async checkout(user: JwtPayload): Promise<Order> {
     return this.commandBus.execute(new CreateOrderCommand(user.sub));
+  }
+
+  async updateOrderStatus(
+    id: number,
+    dto: UpdateOrderStatusDto,
+    user: JwtPayload,
+  ): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: { orderItems: { product: true } },
+    });
+
+    if (!order) throw new NotFoundException(`Order with ID ${id} not found`);
+
+    if (user.role === UserRole.SELLER) {
+      const ownsSomething = order.orderItems.some(
+        (item) => item.product?.sellerId === user.sub,
+      );
+      if (!ownsSomething) {
+        throw new ForbiddenException('You do not have access to this order');
+      }
+    }
+
+    order.status = dto.status;
+    const saved = await this.orderRepository.save(order);
+    this.orderGateway.notifyStatusChange(id, dto.status);
+    return saved;
   }
 }
